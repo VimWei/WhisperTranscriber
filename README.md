@@ -17,8 +17,9 @@
    * max_words_per_line=1,
    * max_line_count=None,
 4. 甚至实现断句的完全自由调整：
-   * 使用ReSegment.py
-   * 人工任意断句 + 程序自动同步精准时间戳
+   * （自由）可借助AI批量断句，也可人工任意断句
+   * （快速）程序自动同步精准时间戳，从此告别字幕苦力工
+   * ReSegment.py 可独立使用，百搭各种 Whisper 衍生品
 5. 支持同时处理多个文件
 6. 支持同时输出不同格式: SRT/JSON/VTT/TXT
 
