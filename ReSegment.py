@@ -1,3 +1,7 @@
+# ReSegment.py
+# Synchronize SRT with Whisper's Word-Level Timestamps JSON
+    # 实现断句的完全自由
+
 import json
 import re
 

@@ -16,10 +16,11 @@
    * max_line_width=78,
    * max_words_per_line=1,
    * max_line_count=None,
-4. 支持同时处理多个文件
-5. 支持同时输出不同格式: SRT/JSON/VTT/TXT
-
-* 缺点及改进建议：https://github.com/SubtitleEdit/subtitleedit/issues/8908
+4. 甚至实现断句的完全自由调整：
+   * 使用ReSegment.py
+   * 人工任意断句 + 程序自动同步精准时间戳
+5. 支持同时处理多个文件
+6. 支持同时输出不同格式: SRT/JSON/VTT/TXT
 
 ## 安装使用
 
@@ -30,3 +31,4 @@
     * pip install -U openai-whisper
 3. 运行程序:
     * python WhisperTranscriber.py
+    * python ReSegment.py
