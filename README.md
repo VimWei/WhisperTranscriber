@@ -1,14 +1,30 @@
 # WhisperTranscriber
 
-原生的 OpenAI Whisper 是一个简易的命令行程序，其参数比较多，为方便配置各种参数，并增强部分功能，从而实现：
+## 简介
 
-1. 可以生成逐字的精准字幕。
-2. 或让Whisper自动断句：
+原生的 [OpenAI Whisper](https://github.com/openai/whisper) 是一个简易的命令行程序，为方便配置各种参数，并增强部分功能，从而实现：
+
+1. 或让Whisper自动断句：
    * use_default_line_breaks=True
-3. 或自由定义断句的参数：
+2. 或自由定义断句的参数：
    * use_default_line_breaks=False
-   * max_line_width=42,
+   * max_line_width=78,
    * max_words_per_line=5,
    * max_line_count=None,
+3. 甚至生成逐字的精准字幕：
+   * use_default_line_breaks=False
+   * max_line_width=78,
+   * max_words_per_line=1,
+   * max_line_count=None,
+4. 支持同时处理多个文件
+5. 支持同时输出不同格式: SRT/JSON/VTT/TXT
 
-缺点及建议：https://github.com/SubtitleEdit/subtitleedit/issues/8908
+* 缺点及建议：https://github.com/SubtitleEdit/subtitleedit/issues/8908
+
+## 安装使用
+
+1. (建议) 新建一个独立的 python 环境，并激活:
+    * 创建：conda create -n whisper python=3.11
+    * 激活：conda activate whisper
+2. 安装 OpenAI Whisper: pip install -U openai-whisper
+3. 执行: python WhisperTranscriber.py

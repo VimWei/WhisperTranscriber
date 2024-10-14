@@ -147,8 +147,8 @@ if __name__ == "__main__":
         fp16=False,
         word_timestamps=True,
         # 断行人工控制
-        max_line_width=42,
-        max_words_per_line=5,
+        max_line_width=78,
+        max_words_per_line=1,
         max_line_count=None,
         # 断行自动控制
         use_default_line_breaks=False,
