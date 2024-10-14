@@ -19,12 +19,14 @@
 4. 支持同时处理多个文件
 5. 支持同时输出不同格式: SRT/JSON/VTT/TXT
 
-* 缺点及建议：https://github.com/SubtitleEdit/subtitleedit/issues/8908
+* 缺点及改进建议：https://github.com/SubtitleEdit/subtitleedit/issues/8908
 
 ## 安装使用
 
 1. (建议) 新建一个独立的 python 环境，并激活:
     * 创建：conda create -n whisper python=3.11
     * 激活：conda activate whisper
-2. 安装 OpenAI Whisper: pip install -U openai-whisper
-3. 执行: python WhisperTranscriber.py
+2. 安装 OpenAI Whisper:
+    * pip install -U openai-whisper
+3. 运行程序:
+    * python WhisperTranscriber.py
