@@ -1,4 +1,5 @@
-# 实现了Whisper的基本参数配置
+# 实现对srt输出的参数控制，从而可以实现逐字srt
+    # max_line_width，max_line_count，max_words_per_line
 
 import whisper
 import os
@@ -24,11 +25,17 @@ def transcribe_audio(
     condition_on_previous_text=True,
     fp16=True,
     word_timestamps=False,
+    max_line_width=None,
+    max_line_count=None,
+    max_words_per_line=None,
 ):
     # 加载模型
     model = whisper.load_model(model, device=device)
 
     for audio in audio_files:
+        # 获取文件名（去掉扩展名）
+        base_name = os.path.splitext(os.path.basename(audio))[0]
+
         # 使用 transcribe 函数
         result = model.transcribe(
             audio,
@@ -48,7 +55,6 @@ def transcribe_audio(
         )
 
         # 处理输出
-        base_name = os.path.splitext(os.path.basename(audio))[0]
         formats = output_format if output_format != 'all' else ["txt", "vtt", "srt", "json"]
 
         for fmt in formats:
@@ -57,9 +63,9 @@ def transcribe_audio(
                 with open(output_file, "w", encoding="utf-8") as f:
                     f.write(result["text"])
             elif fmt == "srt":
+                # 手动处理 SRT 输出，使用单词级时间戳
                 with open(output_file, "w", encoding="utf-8") as f:
-                    writer = whisper.utils.WriteSRT(output_dir)
-                    writer.write_result(result, f)
+                    write_srt_with_word_timestamps(result, f, max_line_width, max_line_count, max_words_per_line)
             elif fmt == "vtt":
                 with open(output_file, "w", encoding="utf-8") as f:
                     writer = whisper.utils.WriteVTT(output_dir)
@@ -71,15 +77,60 @@ def transcribe_audio(
         if verbose:
             print(f"Transcription complete for {audio}. Output saved to {output_dir}")
 
-# 脚本既作为可执行程序，又作为可导入的模块
+def write_srt_with_word_timestamps(result, file, max_line_width=None, max_line_count=None, max_words_per_line=None):
+    # 初始化变量
+    line_index = 1
+    current_line = ""
+    current_line_start = None
+    current_line_end = None
+    words_in_line = 0
+
+    for segment in result["segments"]:
+        for word in segment["words"]:
+            # 检查是否需要换行
+            if (max_line_width and len(current_line) + len(word["word"]) + 1 > max_line_width) or \
+               (max_words_per_line and words_in_line >= max_words_per_line) or \
+               (max_line_count and line_index >= max_line_count):
+                # 写入当前行
+                if current_line_start is not None and current_line_end is not None:
+                    print(f"{line_index}\n{format_timestamp(current_line_start)} --> {format_timestamp(current_line_end)}\n{current_line.strip()}\n", file=file)
+                # 重置当前行
+                line_index += 1
+                current_line = ""
+                current_line_start = None
+                current_line_end = None
+                words_in_line = 0
+
+            # 更新行的开始和结束时间
+            if current_line_start is None:
+                current_line_start = word["start"]
+            current_line_end = word["end"]
+
+            # 追加单词
+            current_line += word["word"] + " "
+            words_in_line += 1
+
+    # 写入最后一行
+    if current_line:
+        if current_line_start is not None and current_line_end is not None:
+            print(f"{line_index}\n{format_timestamp(current_line_start)} --> {format_timestamp(current_line_end)}\n{current_line.strip()}\n", file=file)
+
+def format_timestamp(seconds: float):
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    seconds = round(seconds % 60, 3)
+    return f"{hours:02d}:{minutes:02d}:{seconds:07.3f}"
+
 if __name__ == "__main__":
     transcribe_audio(
         audio_files=["beekeeping is most difficult.mp4"],
         model="turbo",
         language="en",
-        initial_prompt="This topic is about beekeeping:",
-        word_timestamps=True,
-        output_format="all",
+        initial_prompt="This is about beekeeping topic:",
         fp16=False,
+        word_timestamps=True,
+        # max_line_width=80,  # 每行的最大字符数
+        # max_words_per_line=1,  # 每行的最大单词数
+        output_format="all",
         verbose=True
     )
