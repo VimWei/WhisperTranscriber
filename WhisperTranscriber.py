@@ -1,5 +1,7 @@
+# 实现 Whisper 的基本参数配置
 # 实现对srt输出的参数控制，从而可以实现逐字srt
     # max_line_width，max_line_count，max_words_per_line
+# 实现对srt断行控制的自由切换：人工还是自动
 
 import whisper
 import os
@@ -28,6 +30,7 @@ def transcribe_audio(
     max_line_width=None,
     max_line_count=None,
     max_words_per_line=None,
+    use_default_line_breaks=False,
 ):
     # 加载模型
     model = whisper.load_model(model, device=device)
@@ -63,9 +66,12 @@ def transcribe_audio(
                 with open(output_file, "w", encoding="utf-8") as f:
                     f.write(result["text"])
             elif fmt == "srt":
-                # 手动处理 SRT 输出，使用单词级时间戳
+                # 手动处理 SRT 输出
                 with open(output_file, "w", encoding="utf-8") as f:
-                    write_srt_with_word_timestamps(result, f, max_line_width, max_line_count, max_words_per_line)
+                    if use_default_line_breaks:
+                        write_srt_with_default_line_breaks(result, f)
+                    else:
+                        write_srt_with_word_timestamps(result, f, max_line_width, max_line_count, max_words_per_line)
             elif fmt == "vtt":
                 with open(output_file, "w", encoding="utf-8") as f:
                     writer = whisper.utils.WriteVTT(output_dir)
@@ -115,22 +121,35 @@ def write_srt_with_word_timestamps(result, file, max_line_width=None, max_line_c
         if current_line_start is not None and current_line_end is not None:
             print(f"{line_index}\n{format_timestamp(current_line_start)} --> {format_timestamp(current_line_end)}\n{current_line.strip()}\n", file=file)
 
+def write_srt_with_default_line_breaks(result, file):
+    for segment in result["segments"]:
+        start = format_timestamp(segment["start"])
+        end = format_timestamp(segment["end"])
+        text = segment["text"].strip().replace("-->", "->")
+        print(f"{segment['id']}\n{start} --> {end}\n{text}\n", file=file)
+
 def format_timestamp(seconds: float):
-    hours = int(seconds // 3600)
-    minutes = int((seconds % 3600) // 60)
-    seconds = round(seconds % 60, 3)
-    return f"{hours:02d}:{minutes:02d}:{seconds:07.3f}"
+    milliseconds = int(seconds * 1000)
+    hours = milliseconds // 3600000
+    minutes = (milliseconds % 3600000) // 60000
+    seconds = (milliseconds % 60000) // 1000
+    milliseconds = milliseconds % 1000
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d},{milliseconds:03d}"
 
 if __name__ == "__main__":
     transcribe_audio(
         audio_files=["beekeeping is most difficult.mp4"],
         model="turbo",
         language="en",
-        initial_prompt="This is about beekeeping topic:",
+        initial_prompt="This topic is about beekeeping:",
         fp16=False,
         word_timestamps=True,
-        # max_line_width=80,  # 每行的最大字符数
-        # max_words_per_line=1,  # 每行的最大单词数
+        # 断行人工控制
+        max_line_width=42,
+        max_words_per_line=5,
+        max_line_count=None,
+        # 断行自动控制
+        use_default_line_breaks=False,
         output_format="all",
         verbose=True
     )
