@@ -1,3 +1,5 @@
+# WhisperTranscriber
+# src: https://github.com/VimWei/WhisperTranscriber
 # 实现 Whisper 的基本参数配置
 # 实现对srt输出的参数控制，从而可以实现逐字srt
     # max_line_width，max_line_count，max_words_per_line
