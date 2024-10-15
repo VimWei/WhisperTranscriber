@@ -19,7 +19,8 @@
 4. 甚至实现断句的完全自由调整：
    * （自由）借助AI批量断句，也可人工任意断句
    * （快速）使用 ReSegment.py 一键同步精准时间戳
-   * ReSegment.py 可独立使用，百搭各种 Whisper 衍生品
+   * srt-resegment.py 可独立使用，百搭各种 Whisper 衍生品
+   * 更有[无缝集成到mpv的lua版本](https://github.com/VimWei/mpv-config)
 5. 支持同时处理多个文件
 6. 支持同时输出不同格式: SRT/JSON/VTT/TXT
 
