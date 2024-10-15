@@ -1,76 +1,77 @@
 # ReSegment.py
+# https://github.com/VimWei/WhisperTranscriber
 # Synchronize SRT with Whisper's Word-Level Timestamps JSON
     # 实现断句的完全自由
+# 提升文本匹配的兼容性
+    # 无视标点符号
+    # 适应简单的文本增删改情形
 
 import json
 import re
 
 def generate_srt(json_data, text):
-    # 分割纯文本成行列表
-    lines = text.split('\n')
-
-    # 初始化 SRT 内容
+    lines = text.strip().split('\n')
     srt_content = ""
     line_id = 1
 
-    # 将所有单词及其时间信息放入一个列表中
-    all_words = []
+    # 提取JSON中的单词
+    json_all_words = []
     for segment in json_data['segments']:
-        all_words.extend(segment['words'])
+        json_all_words.extend(segment['words'])
 
-    word_index = 0
+    json_word_index = 0
+    matched_words_index = 0
+    previous_end_time = 0  # 存储上一行的结束时间
 
-    # 遍历每行
     for line in lines:
-        # 使用正则表达式分割单词，保留标点符号
-        words = re.findall(r'\w+|[^\w\s]', line.strip())
+        # 提取TXT中的单词：只要单词，不要标点符号
+        txt_words = re.findall(r'\b\w+\b', line.strip())
+        # print(f"txt_words: {txt_words}")
 
-        if not words:
+        if not txt_words:
             continue
 
         start_time = None
         end_time = None
-
-        # 找到对应的词时间信息
-        line_start_index = word_index
         matched_words = []
 
-        while word_index < len(all_words) and words:
-            word_info = all_words[word_index]
-            word = word_info['word'].strip()
+        # 遍历TXT中的每个单词以查找匹配
+        for txt_word in txt_words:
+            # print(f"开始匹配: {txt_word} ...")
+            matched = False  # 标记是否找到匹配
 
-            # 移除标点符号进行比较
-            clean_word = re.sub(r'[^\w\s]', '', word)
-            clean_expected_word = re.sub(r'[^\w\s]', '', words[0])
+            while json_word_index < len(json_all_words):
+                json_word_info = json_all_words[json_word_index]
+                clean_json_word = re.sub(r'[^\w\s]', '', json_word_info['word']).strip()
 
-            if clean_word.lower() == clean_expected_word.lower():
-                if start_time is None:
-                    start_time = word_info['start']
-                end_time = word_info['end']
-                matched_words.append(words.pop(0))
+                if clean_json_word.lower() == txt_word.lower():
+                    if start_time is None:
+                        start_time = json_word_info['start']
+                    end_time = json_word_info['end']
+                    matched_words.append(txt_word)
+                    # print(f"matched_words_index: {matched_words_index}")
+                    matched = True
+                    matched_words_index = json_word_index + 1
+                    break  # 找到匹配后退出循环
+                else:
+                    json_word_index += 1
 
-                # 检查并移除最后一个可能的标点符号
-                if words and re.match(r'^[^\w\s]+$', words[0]):
-                    matched_words.append(words.pop(0))  # 移除标点符号
+            if matched:
+                json_word_index = matched_words_index
+            else:
+                json_word_index = matched_words_index-1
+                print(f"Warning: Could not match word '{txt_word}' in line {line_id}")
 
-            word_index += 1
+        # 设置时间戳
+        if start_time is None:
+            start_time = previous_end_time
 
-            if not words:  # 如果所有单词都匹配完了，就结束循环
-                break
+        if end_time is None:
+            end_time = previous_end_time
 
-        # 如果没有找到匹配的单词，回退到这一行开始的地方
-        if words:
-            word_index = line_start_index
-            print(f"Warning: Could not find complete timing for line: {line}")
-            print(f"Matched words: {matched_words}")
-            print(f"Remaining words: {words}")
-
-        # 生成 SRT 内容
-        if start_time is not None and end_time is not None:
-            srt_content += f"{line_id}\n{format_time(start_time)} --> {format_time(end_time)}\n{line}\n\n"
-            line_id += 1
-        else:
-            print(f"Warning: Could not find timing for line: {line}")
+        srt_content += f"{line_id}\n{format_time(start_time)} --> {format_time(end_time)}\n{line}\n\n"
+        previous_end_time = end_time  # 更新上一行结束时间
+        line_id += 1
 
     return srt_content
 
