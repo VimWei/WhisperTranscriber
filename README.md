@@ -17,13 +17,13 @@
    * max_words_per_line=1,
    * max_line_count=None,
 4. 甚至实现断句的完全自由调整：
-   * （自由）可借助AI批量断句，也可人工任意断句
-   * （快速）程序自动同步精准时间戳，从此告别字幕苦力工
+   * 先：（自由）借助AI批量断句，也可人工任意断句
+   * 后：（快速）使用 ReSegment.py 一键同步精准时间戳
    * ReSegment.py 可独立使用，百搭各种 Whisper 衍生品
 5. 支持同时处理多个文件
 6. 支持同时输出不同格式: SRT/JSON/VTT/TXT
 
-## 安装使用
+## 安装与使用
 
 1. (建议) 新建一个独立的 python 环境，并激活:
     * 创建：conda create -n whisper python=3.11
