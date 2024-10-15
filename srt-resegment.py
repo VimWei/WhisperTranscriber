@@ -1,10 +1,11 @@
-# ReSegment.py
+# srt-resegment.py
 # https://github.com/VimWei/WhisperTranscriber
 # Synchronize SRT with Whisper's Word-Level Timestamps JSON
     # 实现断句的完全自由
 # 提升文本匹配的兼容性
     # 无视标点符号
     # 适应简单的文本增删改情形
+# lua edition: https://github.com/VimWei/mpv-config
 
 import json
 import re
