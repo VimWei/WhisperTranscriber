@@ -1,10 +1,8 @@
-# WhisperTranscriber
+# Whisper Transcribe and srt Resegment
 
 ## 简介
 
-Whisper Transcribe and srt Resegment.
-
-为方便配置 [OpenAI Whisper](https://github.com/openai/whisper) 各种参数，并增强部分功能，从而实现：
+方便配置 [OpenAI Whisper](https://github.com/openai/whisper) 各种参数，并增强部分功能：
 
 1. 或让Whisper自动断句：
    * use_default_line_breaks=True
