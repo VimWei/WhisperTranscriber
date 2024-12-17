@@ -151,7 +151,7 @@ if __name__ == "__main__":
         max_words_per_line=1,
         max_line_count=None,
         # 断行自动控制
-        use_default_line_breaks=False,
-        output_format="all",
+        use_default_line_breaks=True,
+        output_format=["json", "srt"],
         verbose=True
     )
