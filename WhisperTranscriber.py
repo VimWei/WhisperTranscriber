@@ -8,82 +8,118 @@
 import whisper
 import os
 import json
+import yaml
+from pathlib import Path
 
-def transcribe_audio(
-    audio_files,
-    model="turbo",
-    model_dir=None,
-    device="cpu",
-    output_dir=".",
-    output_format="all",
-    verbose=True,
-    task="transcribe",
-    language=None,
-    temperature=0,
-    best_of=5,
-    beam_size=5,
-    patience=None,
-    length_penalty=None,
-    suppress_tokens="-1",
-    initial_prompt=None,
-    condition_on_previous_text=True,
-    fp16=True,
-    word_timestamps=False,
-    max_line_width=None,
-    max_line_count=None,
-    max_words_per_line=None,
-    use_default_line_breaks=False,
-):
+def load_config(config_file='config.yaml'):
+    """加载配置文件"""
+    with open(config_file, 'r', encoding='utf-8') as f:
+        return yaml.safe_load(f)
+
+def get_media_files(config):
+    """获取要处理的媒体文件列表"""
+    input_dir = config['input']['directory']
+    formats = config['input']['formats']
+    specific_files = config['input']['specific_files']
+
+    # 确保输入目录存在
+    if not os.path.exists(input_dir):
+        os.makedirs(input_dir)
+        print(f"Created input directory: {input_dir}")
+        return []
+
+    # 如果指定了具体文件，则只处理这些文件
+    if specific_files:
+        return [os.path.join(input_dir, f) for f in specific_files 
+                if os.path.exists(os.path.join(input_dir, f))]
+
+    # 否则处理目录下所有支持的格式
+    media_files = []
+    for format in formats:
+        media_files.extend(
+            str(p) for p in Path(input_dir).glob(f"*{format}")
+        )
+    
+    return sorted(media_files)
+
+def transcribe_audio(config_file='config.yaml'):
+    """使用配置文件的转写函数"""
+    # 加载配置
+    config = load_config(config_file)
+    
+    # 获取要处理的媒体文件
+    media_files = get_media_files(config)
+    
+    if not media_files:
+        print(f"No media files found in {config['input']['directory']}")
+        print(f"Supported formats: {', '.join(config['input']['formats'])}")
+        return
+
+    print(f"Found {len(media_files)} files to process:")
+    for file in media_files:
+        print(f"  - {os.path.basename(file)}")
+    print()
+
     # 加载模型
-    model = whisper.load_model(model, device=device)
+    model = whisper.load_model(
+        config['model']['name'],
+        device=config['model']['device']
+    )
 
-    for audio in audio_files:
+    for audio in media_files:
+        print(f"Processing: {os.path.basename(audio)}")
         # 获取文件名（去掉扩展名）
         base_name = os.path.splitext(os.path.basename(audio))[0]
 
         # 使用 transcribe 函数
         result = model.transcribe(
             audio,
-            language=language,
-            task=task,
-            temperature=temperature,
-            best_of=best_of,
-            beam_size=beam_size,
-            patience=patience,
-            length_penalty=length_penalty,
-            suppress_tokens=suppress_tokens,
-            initial_prompt=initial_prompt,
-            condition_on_previous_text=condition_on_previous_text,
-            fp16=fp16,
-            word_timestamps=word_timestamps,
-            verbose=verbose,
+            language=config['transcription']['language'],
+            task=config['transcription']['task'],
+            temperature=config['transcription']['temperature'],
+            best_of=config['transcription']['best_of'],
+            beam_size=config['transcription']['beam_size'],
+            patience=config['transcription']['patience'],
+            length_penalty=config['transcription']['length_penalty'],
+            suppress_tokens=config['transcription']['suppress_tokens'],
+            initial_prompt=config['transcription']['initial_prompt'],
+            condition_on_previous_text=config['transcription']['condition_on_previous_text'],
+            fp16=config['model']['fp16'],
+            word_timestamps=config['transcription']['word_timestamps'],
+            verbose=config['output']['verbose'],
         )
 
         # 处理输出
-        formats = output_format if output_format != 'all' else ["txt", "vtt", "srt", "json"]
+        formats = config['output']['format'] if config['output']['format'] != 'all' else ["txt", "vtt", "srt", "json"]
 
         for fmt in formats:
-            output_file = os.path.join(output_dir, f"{base_name}.{fmt}")
+            output_file = os.path.join(config['output']['directory'], f"{base_name}.{fmt}")
             if fmt == "txt":
                 with open(output_file, "w", encoding="utf-8") as f:
                     f.write(result["text"])
             elif fmt == "srt":
                 # 手动处理 SRT 输出
                 with open(output_file, "w", encoding="utf-8") as f:
-                    if use_default_line_breaks:
+                    if config['srt']['use_default_line_breaks']:
                         write_srt_with_default_line_breaks(result, f)
                     else:
-                        write_srt_with_word_timestamps(result, f, max_line_width, max_line_count, max_words_per_line)
+                        write_srt_with_word_timestamps(
+                            result, 
+                            f,
+                            config['srt']['max_line_width'],
+                            config['srt']['max_line_count'],
+                            config['srt']['max_words_per_line']
+                        )
             elif fmt == "vtt":
                 with open(output_file, "w", encoding="utf-8") as f:
-                    writer = whisper.utils.WriteVTT(output_dir)
+                    writer = whisper.utils.WriteVTT(config['output']['directory'])
                     writer.write_result(result, f)
             elif fmt == "json":
                 with open(output_file, "w", encoding="utf-8") as f:
                     json.dump(result, f, ensure_ascii=False, indent=2)
 
-        if verbose:
-            print(f"Transcription complete for {audio}. Output saved to {output_dir}")
+        if config['output']['verbose']:
+            print(f"Transcription complete for {audio}. Output saved to {config['output']['directory']}")
 
 def write_srt_with_word_timestamps(result, file, max_line_width=None, max_line_count=None, max_words_per_line=None):
     # 初始化变量
@@ -139,19 +175,4 @@ def format_timestamp(seconds: float):
     return f"{hours:02d}:{minutes:02d}:{seconds:02d},{milliseconds:03d}"
 
 if __name__ == "__main__":
-    transcribe_audio(
-        audio_files=["How To Make A lot Of New Hives FAST.mp4"],
-        model="turbo",
-        language="en",
-        initial_prompt="This topic is about beekeeping.",
-        fp16=False,
-        word_timestamps=True,
-        # 断行人工控制
-        max_line_width=78,
-        max_words_per_line=1,
-        max_line_count=None,
-        # 断行自动控制
-        use_default_line_breaks=True,
-        output_format=["json", "srt"],
-        verbose=True
-    )
+    transcribe_audio()

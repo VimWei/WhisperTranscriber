@@ -1,0 +1,44 @@
+# Input Configuration
+input:
+  # 输入文件目录
+  directory: "data"
+  # 支持的文件格式
+  formats: [".mp4", ".mkv", ".webm", ".m4a", ".mp3", ".wav"]
+  # 可选：指定具体文件，如果为空则处理目录下所有支持的格式
+  specific_files: []
+
+# Whisper Model Configuration
+model:
+  name: "turbo"
+  model_dir: null
+  device: "cpu"
+  fp16: false
+
+# Transcription Parameters
+transcription:
+  task: "transcribe"
+  language: "en"
+  temperature: 0
+  best_of: 5
+  beam_size: 5
+  patience: null
+  length_penalty: null
+  suppress_tokens: "-1"
+  initial_prompt: "This topic is about beekeeping."
+  condition_on_previous_text: true
+  word_timestamps: true
+
+# Output Configuration
+output:
+  directory: "data"
+  format: ["json", "srt", "txt"]  # 可用选项["json", "srt", "vtt", "txt"]
+  verbose: true
+
+# SRT Format Configuration
+srt:
+  # 断行人工控制
+  max_line_width: 78
+  max_words_per_line: 1
+  max_line_count: null
+  # 断行自动控制
+  use_default_line_breaks: true 

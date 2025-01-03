@@ -5,6 +5,7 @@ Thumbs.db
 
 # Python
 __pycache__/
+*.pyc
 
 # Data files
 data/
