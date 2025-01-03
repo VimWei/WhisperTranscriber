@@ -7,6 +7,12 @@ input:
   # 可选：指定具体文件，如果为空则处理目录下所有支持的格式
   specific_files: []
 
+# Output Configuration
+output:
+  directory: "data"
+  format: ["json", "srt", "txt"]  # 可用选项["json", "srt", "vtt", "txt"]
+  verbose: true
+
 # Whisper Model Configuration
 model:
   name: "turbo"
@@ -28,11 +34,6 @@ transcription:
   condition_on_previous_text: true
   word_timestamps: true
 
-# Output Configuration
-output:
-  directory: "data"
-  format: ["json", "srt", "txt"]  # 可用选项["json", "srt", "vtt", "txt"]
-  verbose: true
 
 # SRT Format Configuration
 srt:

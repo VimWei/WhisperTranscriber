@@ -30,8 +30,8 @@
 1. (建议) 新建一个独立的 python 环境，并激活:
     * 创建：conda create -n whisper python=3.11
     * 激活：conda activate whisper
-2. 安装 OpenAI Whisper:
-    * pip install -U openai-whisper
+2. 安装依赖包:
+    * pip install -r requirements.txt
 3. 配置并运行程序:
     * python WhisperTranscriber.py
     * python srt-resegment.py
