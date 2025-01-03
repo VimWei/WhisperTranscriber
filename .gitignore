@@ -1,1 +1,10 @@
+# System files
+.DS_Store
+Thumbs.db
 *.swp
+
+# Python
+__pycache__/
+
+# Data files
+data/

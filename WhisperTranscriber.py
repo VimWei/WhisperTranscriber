@@ -140,10 +140,10 @@ def format_timestamp(seconds: float):
 
 if __name__ == "__main__":
     transcribe_audio(
-        audio_files=["beekeeping is most difficult.mp4"],
+        audio_files=["How To Make A lot Of New Hives FAST.mp4"],
         model="turbo",
         language="en",
-        initial_prompt="This topic is about beekeeping:",
+        initial_prompt="This topic is about beekeeping.",
         fp16=False,
         word_timestamps=True,
         # 断行人工控制
