@@ -1,4 +1,4 @@
-# srt-resegment.py
+# srt-resegment-by-json.py
 # https://github.com/VimWei/WhisperTranscriber
 # Synchronize SRT with Whisper's Word-Level Timestamps JSON
     # 实现断句的完全自由

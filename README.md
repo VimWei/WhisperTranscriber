@@ -1,6 +1,6 @@
-# Whisper Transcribe and SRT-Resegment
+# Whisper Transcribe 及 Subtitle 相关小工具
 
-## 简介
+## Whisper Transcribe
 
 方便配置 [OpenAI Whisper](https://github.com/openai/whisper) 各种参数，并增强部分功能：
 
@@ -18,12 +18,27 @@
    * max_line_count=None,
 4. 甚至实现断句的完全自由调整：
    * 首先，（自动）让Whisper自动断句
-   * 然后，（自由）借助AI批量断句，也可人工任意断句
-   * 最后，（快速）使用 srt-resegment.py 一键同步精准时间戳
-   * srt-resegment.py 可独立使用，百搭各种 Whisper 衍生品
-   * 更有[无缝集成到mpv的lua版本](https://github.com/VimWei/mpv-config)
-5. 支持同时处理多个文件
+   * 然后，（自由）借助AI批量断句，也可应用txt-resegment-by-rules.vim，在人工任意断句
+   * 最后，（快速）使用 srt-resegment-by-json.py 一键同步精准时间戳
+5. 支持同时处理多个多媒体文件
+   * 自动读取目录下所有支持的文件
+   * 也可以只处理指定的文件
 6. 支持同时输出不同格式: SRT/JSON/VTT/TXT
+
+## Subtitle 相关小工具
+
+1. clean-vtt.py
+   * 清理VTT格式字幕文件中的重复字幕内容，常见于youtube下载的vtt文件
+
+2. txt-resegment-by-rules.vim
+   * vim script: 基于常见规则给纯文本字幕文件批量断句，减轻手工断句处理工作量
+
+3. srt-resegment-by-json.py
+   * Synchronize SRT with Whisper's Word-Level Timestamps JSON
+   * 推荐使用 [无缝集成到mpv的lua版本](https://github.com/VimWei/mpv-config)
+
+4. FixTranslation.vim
+   * vim script: 批量修正字幕文件中的常见翻译错误
 
 ## 安装与使用
 
@@ -33,5 +48,5 @@
 2. 安装依赖包:
     * pip install -r requirements.txt
 3. 配置并运行程序:
-    * python WhisperTranscriber.py
-    * python srt-resegment.py
+   * 配置 config.yaml
+   * 运行: python WhisperTranscriber.py
