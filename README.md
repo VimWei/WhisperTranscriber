@@ -25,6 +25,15 @@
    * 也可以只处理指定的文件
 6. 支持同时输出不同格式: SRT/JSON/VTT/TXT
 
+## 推荐使用: WhisperX Transcribe
+
+* srt: https://github.com/VimWei/WhisperXTranscriber
+    - Batched inference for 70x realtime transcription using whisper large-v2
+    - faster-whisper backend, requires <8GB gpu memory for large-v2 with beam_size=5
+    - Accurate word-level timestamps using wav2vec2 alignment
+    - Multispeaker ASR using speaker diarization from pyannote-audio (speaker ID labels)
+    - VAD preprocessing, reduces hallucination & batching with no WER degradation
+
 ## Subtitle 相关小工具
 
 1. clean-vtt.py
